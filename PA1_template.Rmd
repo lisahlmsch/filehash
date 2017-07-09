@@ -1,6 +1,8 @@
 ---
 title: "Peer-Graded Assignment: Course Project"
-output: html_document
+output: 
+  html_document: 
+    keep_md: yes
 ---
 
 Instructions
@@ -97,30 +99,26 @@ subset(avg_steps_int, Steps == max(avg_steps_int$Steps))
 
 ### Code to describe and show a strategy for imputing missing data
 
-The mice package in R, helps you imputing missing values with plausible data values. 
-These plausible values are drawn from a distribution specifically designed for each missing datapoint.
+Total number of missing values in the dataset:
 ```{r}
-library(mice)
-md.pattern(dataset)
+summary(dataset)
 ```
-Usually a safe maximum threshold is 5% of the total for large datasets.
-The output tells us that 15264 samples are complete, 2304 samples miss the Step measurement
-In other words: We see that Steps is missing 13% of all datapoints.
+The summary shows that in steps there are 2304 missing datapoints.
 
-The mice() function takes care of the imputing process
-```{r eval = FALSE}
-tempData <- mice(dataset,m=5,maxit=50,meth='pmm',seed=500)
-summary(tempData)
-```
-m=5 refers to the number of imputed datasets. Five is the default value.
-meth='pmm' refers to the imputation method. In this case we are using predictive mean matching as imputation method.
+Strategy for imputing missing data:
+Replace NA by the mean for that 5-minute interval
 
-Now we can get back the completed dataset using the complete() function. 
 ```{r}
-completedDataset <- complete(tempData,1)
-```
-The missing values have been replaced with the imputed values.
-```{r}
+completedDataset <- dataset
+
+for(i in 1:nrow(completedDataset)) {
+    if (is.na(completedDataset$steps[i])) {
+        ival <- completedDataset$interval[i] 
+        newStep <- subset(avg_steps, Interval == ival) 
+        completedDataset$steps[i] <- newStep$Steps
+    }
+} 
+
 summary(completedDataset)
 ```
 
